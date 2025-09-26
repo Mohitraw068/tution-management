@@ -1,0 +1,102 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Institute {
+  id            String   @id @default(cuid())
+  name          String
+  subdomain     String   @unique
+  instituteCode String   @unique
+  logo          String?
+  primaryColor  String   @default("#3B82F6")
+  subscription  String   @default("BASIC")
+  studentLimit  Int      @default(100)
+  createdAt     DateTime @default(now())
+  users         User[]
+  classes       Class[]
+
+  @@map("institutes")
+}
+
+model User {
+  id          String    @id @default(cuid())
+  email       String
+  password    String
+  name        String
+  role        String    // OWNER, ADMIN, TEACHER, STUDENT, PARENT
+  instituteId String
+  institute   Institute @relation(fields: [instituteId], references: [id])
+  createdAt   DateTime  @default(now())
+  teacherClasses Class[] @relation("TeacherClasses")
+
+  @@unique([email, instituteId])
+  @@map("users")
+}
+
+model Class {
+  id          String       @id @default(cuid())
+  name        String
+  subject     String
+  description String?
+  instituteId String
+  institute   Institute    @relation(fields: [instituteId], references: [id])
+  teacherId   String
+  teacher     User         @relation("TeacherClasses", fields: [teacherId], references: [id])
+  capacity    Int          @default(30)
+  schedule    String       // JSON string for weekly schedule
+  isVirtual   Boolean      @default(false)
+  meetingLink String?
+  location    String?
+  startDate   DateTime?
+  endDate     DateTime?
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  students    Student[]
+  attendance  Attendance[]
+  materials   Material[]
+
+  @@map("classes")
+}
+
+model Student {
+  id      String @id @default(cuid())
+  userId  String
+  classId String
+  class   Class  @relation(fields: [classId], references: [id])
+
+  @@map("students")
+}
+
+model Attendance {
+  id        String   @id @default(cuid())
+  date      DateTime
+  status    String   // PRESENT, ABSENT, LATE
+  studentId String
+  classId   String
+  class     Class    @relation(fields: [classId], references: [id])
+
+  @@map("attendance")
+}
+
+model Material {
+  id          String   @id @default(cuid())
+  title       String
+  description String?
+  fileUrl     String
+  fileName    String
+  fileSize    Int
+  fileType    String
+  classId     String
+  class       Class    @relation(fields: [classId], references: [id])
+  uploadedAt  DateTime @default(now())
+
+  @@map("materials")
+}
