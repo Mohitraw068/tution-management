@@ -22,6 +22,9 @@ model Institute {
   createdAt     DateTime @default(now())
   users         User[]
   classes       Class[]
+  announcements Announcement[]
+  messages      Message[]
+  notifications Notification[]
 
   @@map("institutes")
 }
@@ -36,6 +39,11 @@ model User {
   institute   Institute @relation(fields: [instituteId], references: [id])
   createdAt   DateTime  @default(now())
   teacherClasses Class[] @relation("TeacherClasses")
+  announcementsCreated Announcement[] @relation("AnnouncementCreator")
+  announcementsRead AnnouncementRead[] @relation("AnnouncementReader")
+  sentMessages Message[] @relation("MessageSender")
+  receivedMessages Message[] @relation("MessageRecipient")
+  notifications Notification[] @relation("UserNotifications")
 
   @@unique([email, instituteId])
   @@map("users")
@@ -159,4 +167,72 @@ model HomeworkSubmission {
 
   @@unique([homeworkId, studentId])
   @@map("homework_submissions")
+}
+
+model Announcement {
+  id          String   @id @default(cuid())
+  title       String
+  content     String
+  priority    String   @default("MEDIUM") // HIGH, MEDIUM, LOW
+  isPinned    Boolean  @default(false)
+  targetRole  String?  // Optional: STUDENT, TEACHER, PARENT - if null, all users
+  classIds    String?  // JSON array of class IDs to target specific classes
+  instituteId String
+  institute   Institute @relation(fields: [instituteId], references: [id])
+  createdBy   String   // User ID of creator
+  creator     User     @relation("AnnouncementCreator", fields: [createdBy], references: [id])
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  readBy      AnnouncementRead[]
+
+  @@map("announcements")
+}
+
+model AnnouncementRead {
+  id             String       @id @default(cuid())
+  announcementId String
+  announcement   Announcement @relation(fields: [announcementId], references: [id])
+  userId         String
+  user           User         @relation("AnnouncementReader", fields: [userId], references: [id])
+  readAt         DateTime     @default(now())
+
+  @@unique([announcementId, userId])
+  @@map("announcement_reads")
+}
+
+model Message {
+  id           String      @id @default(cuid())
+  subject      String?
+  content      String
+  senderId     String
+  sender       User        @relation("MessageSender", fields: [senderId], references: [id])
+  recipientId  String
+  recipient    User        @relation("MessageRecipient", fields: [recipientId], references: [id])
+  conversationId String?   // Groups messages in a conversation thread
+  replyToId    String?     // ID of message this is replying to
+  replyTo      Message?    @relation("MessageReplies", fields: [replyToId], references: [id])
+  replies      Message[]   @relation("MessageReplies")
+  isRead       Boolean     @default(false)
+  instituteId  String
+  institute    Institute   @relation(fields: [instituteId], references: [id])
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+
+  @@map("messages")
+}
+
+model Notification {
+  id          String    @id @default(cuid())
+  title       String
+  message     String
+  type        String    // ANNOUNCEMENT, MESSAGE, HOMEWORK, ATTENDANCE, SYSTEM
+  relatedId   String?   // ID of related entity (announcement, message, etc.)
+  userId      String
+  user        User      @relation("UserNotifications", fields: [userId], references: [id])
+  isRead      Boolean   @default(false)
+  instituteId String
+  institute   Institute @relation(fields: [instituteId], references: [id])
+  createdAt   DateTime  @default(now())
+
+  @@map("notifications")
 }

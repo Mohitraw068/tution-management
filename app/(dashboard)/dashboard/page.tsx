@@ -5,6 +5,7 @@ import { useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { useInstitute, useInstituteBranding } from '@/components/providers/InstituteProvider'
 import { Sidebar } from '@/components/layout/Sidebar'
+import { NotificationBell } from '@/components/notifications/NotificationBell'
 import { OwnerDashboard } from '@/components/dashboards/OwnerDashboard'
 import { TeacherDashboard } from '@/components/dashboards/TeacherDashboard'
 import { StudentDashboard } from '@/components/dashboards/StudentDashboard'
@@ -70,6 +71,20 @@ export default function DashboardPage() {
 
       {/* Main Content */}
       <div className="flex-1 ml-64">
+        {/* Header */}
+        <header className="bg-white shadow-sm border-b border-gray-200">
+          <div className="flex justify-between items-center px-6 py-4">
+            <div>
+              <h1 className="text-2xl font-semibold text-gray-900">Dashboard</h1>
+              <p className="text-sm text-gray-600">Welcome back, {session.user.name}</p>
+            </div>
+            <div className="flex items-center space-x-4">
+              <NotificationBell />
+            </div>
+          </div>
+        </header>
+
+        {/* Main Dashboard Content */}
         <main className="p-6">
           {renderDashboardContent()}
         </main>
