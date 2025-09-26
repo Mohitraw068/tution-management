@@ -4,15 +4,48 @@ import { StatsCard } from '@/components/widgets/StatsCard'
 import { QuickActions } from '@/components/widgets/QuickActions'
 import { RecentActivity } from '@/components/widgets/RecentActivity'
 import { useSession } from 'next-auth/react'
+import { useRouter } from 'next/navigation'
+import { useEffect, useState } from 'react'
 
 export function TeacherDashboard() {
   const { data: session } = useSession()
+  const router = useRouter()
+  const [homeworkStats, setHomeworkStats] = useState({
+    pendingGrading: 0,
+    totalHomework: 0,
+    averageGrade: 0
+  })
+
+  useEffect(() => {
+    if (session) {
+      fetchHomeworkStats()
+    }
+  }, [session])
+
+  const fetchHomeworkStats = async () => {
+    try {
+      const response = await fetch('/api/homework')
+      if (response.ok) {
+        const homework = await response.json()
+        const totalHomework = homework.length
+        const submissionsCount = homework.reduce((sum: number, hw: any) => sum + hw._count.submissions, 0)
+        // For now, using mock data for other stats since we'd need a more complex query
+        setHomeworkStats({
+          pendingGrading: Math.floor(submissionsCount * 0.3), // Estimate 30% pending
+          totalHomework,
+          averageGrade: 85 // Mock data
+        })
+      }
+    } catch (error) {
+      console.error('Error fetching homework stats:', error)
+    }
+  }
 
   // Mock data - in real app, fetch from API
   const stats = {
     todaysClasses: 4,
     totalStudents: 65,
-    pendingGrading: 8,
+    pendingGrading: homeworkStats.pendingGrading,
     attendanceToMark: 3,
     upcomingAssignments: 2,
     averageAttendance: 92
@@ -34,40 +67,40 @@ export function TeacherDashboard() {
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
         </svg>
       ),
-      onClick: () => alert('Mark Attendance clicked'),
+      onClick: () => router.push('/attendance'),
       color: 'green' as const
     },
     {
-      title: 'Grade Assignments',
-      description: 'Review and grade pending assignments',
+      title: 'Create Homework',
+      description: 'Create a new homework assignment',
+      icon: (
+        <svg className="w-full h-full" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+        </svg>
+      ),
+      onClick: () => router.push('/homework/create'),
+      color: 'blue' as const
+    },
+    {
+      title: 'Grade Homework',
+      description: 'Review and grade pending submissions',
       icon: (
         <svg className="w-full h-full" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.196-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
         </svg>
       ),
-      onClick: () => alert('Grade Assignments clicked'),
+      onClick: () => router.push('/homework'),
       color: 'yellow' as const
     },
     {
-      title: 'Create Assignment',
-      description: 'Create a new assignment for your classes',
+      title: 'Manage Classes',
+      description: 'View and manage your classes',
       icon: (
         <svg className="w-full h-full" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
         </svg>
       ),
-      onClick: () => alert('Create Assignment clicked'),
-      color: 'blue' as const
-    },
-    {
-      title: 'Send Announcement',
-      description: 'Send announcement to your students',
-      icon: (
-        <svg className="w-full h-full" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z" />
-        </svg>
-      ),
-      onClick: () => alert('Send Announcement clicked'),
+      onClick: () => router.push('/classes'),
       color: 'purple' as const
     }
   ]

@@ -63,6 +63,7 @@ model Class {
   attendance  Attendance[]
   materials   Material[]
   qrSessions  QRSession[]
+  homework    Homework[]
 
   @@map("classes")
 }
@@ -119,4 +120,43 @@ model Material {
   uploadedAt  DateTime @default(now())
 
   @@map("materials")
+}
+
+model Homework {
+  id            String      @id @default(cuid())
+  title         String
+  description   String
+  dueDate       DateTime
+  totalPoints   Int         @default(100)
+  attachments   String?     // JSON array of file URLs
+  instructions  String?
+  status        String      @default("DRAFT") // DRAFT, PUBLISHED, CLOSED
+  classId       String
+  class         Class       @relation(fields: [classId], references: [id])
+  createdBy     String      // Teacher ID
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+  submissions   HomeworkSubmission[]
+
+  @@map("homework")
+}
+
+model HomeworkSubmission {
+  id            String    @id @default(cuid())
+  homeworkId    String
+  homework      Homework  @relation(fields: [homeworkId], references: [id])
+  studentId     String
+  answer        String?   // Rich text answer
+  attachments   String?   // JSON array of file URLs
+  submittedAt   DateTime  @default(now())
+  status        String    @default("SUBMITTED") // SUBMITTED, GRADED, RETURNED
+  grade         Int?      // Points awarded
+  maxGrade      Int?      // Points possible at submission time
+  feedback      String?   // Teacher feedback
+  gradedBy      String?   // Teacher ID who graded
+  gradedAt      DateTime?
+  isLate        Boolean   @default(false)
+
+  @@unique([homeworkId, studentId])
+  @@map("homework_submissions")
 }

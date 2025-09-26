@@ -12,6 +12,12 @@ export function StudentDashboard() {
   const router = useRouter()
   const [attendanceStats, setAttendanceStats] = useState<any>(null)
   const [todaysClasses, setTodaysClasses] = useState<any[]>([])
+  const [homeworkStats, setHomeworkStats] = useState({
+    totalHomework: 0,
+    pendingHomework: 0,
+    overdue: 0,
+    averageGrade: 0
+  })
 
   useEffect(() => {
     if (session?.user) {
@@ -21,8 +27,23 @@ export function StudentDashboard() {
 
   const fetchStudentData = async () => {
     try {
-      // Fetch student's classes and attendance data
-      const today = new Date().toISOString().split('T')[0]
+      // Fetch homework data
+      const homeworkResponse = await fetch('/api/homework')
+      if (homeworkResponse.ok) {
+        const homework = await homeworkResponse.json()
+        const pendingHomework = homework.filter((hw: any) => !hw.isSubmitted && new Date(hw.dueDate) > new Date()).length
+        const overdue = homework.filter((hw: any) => !hw.isSubmitted && new Date(hw.dueDate) <= new Date()).length
+        const averageGrade = homework
+          .filter((hw: any) => hw.submission?.grade !== undefined)
+          .reduce((sum: number, hw: any, _, arr: any[]) => sum + hw.submission.grade / arr.length, 0) || 0
+
+        setHomeworkStats({
+          totalHomework: homework.length,
+          pendingHomework,
+          overdue,
+          averageGrade: Math.round(averageGrade)
+        })
+      }
 
       // You could create specific endpoints for student dashboard data
       // For now, we'll use mock data with some real structure
@@ -41,10 +62,10 @@ export function StudentDashboard() {
   // Mock data - in real app, fetch from API
   const stats = {
     todaysClasses: todaysClasses.length || 5,
-    pendingAssignments: 3,
+    pendingAssignments: homeworkStats.pendingHomework,
     attendancePercentage: attendanceStats?.attendanceRate || 89,
-    averageGrade: 85,
-    completedAssignments: 12,
+    averageGrade: homeworkStats.averageGrade || 85,
+    completedAssignments: homeworkStats.totalHomework - homeworkStats.pendingHomework,
     upcomingExams: 2
   }
 
@@ -75,14 +96,14 @@ export function StudentDashboard() {
       color: 'blue' as const
     },
     {
-      title: 'Submit Assignment',
-      description: 'Upload your completed assignments',
+      title: 'View Homework',
+      description: 'View and submit homework assignments',
       icon: (
         <svg className="w-full h-full" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
         </svg>
       ),
-      onClick: () => alert('Submit Assignment clicked'),
+      onClick: () => router.push('/homework'),
       color: 'green' as const
     },
     {
