@@ -4,15 +4,45 @@ import { StatsCard } from '@/components/widgets/StatsCard'
 import { QuickActions } from '@/components/widgets/QuickActions'
 import { RecentActivity } from '@/components/widgets/RecentActivity'
 import { useSession } from 'next-auth/react'
+import { useRouter } from 'next/navigation'
+import { useEffect, useState } from 'react'
 
 export function StudentDashboard() {
   const { data: session } = useSession()
+  const router = useRouter()
+  const [attendanceStats, setAttendanceStats] = useState<any>(null)
+  const [todaysClasses, setTodaysClasses] = useState<any[]>([])
+
+  useEffect(() => {
+    if (session?.user) {
+      fetchStudentData()
+    }
+  }, [session])
+
+  const fetchStudentData = async () => {
+    try {
+      // Fetch student's classes and attendance data
+      const today = new Date().toISOString().split('T')[0]
+
+      // You could create specific endpoints for student dashboard data
+      // For now, we'll use mock data with some real structure
+      setAttendanceStats({
+        totalClasses: 15,
+        present: 13,
+        absent: 1,
+        late: 1,
+        attendanceRate: 87
+      })
+    } catch (error) {
+      console.error('Error fetching student data:', error)
+    }
+  }
 
   // Mock data - in real app, fetch from API
   const stats = {
-    todaysClasses: 5,
+    todaysClasses: todaysClasses.length || 5,
     pendingAssignments: 3,
-    attendancePercentage: 89,
+    attendancePercentage: attendanceStats?.attendanceRate || 89,
     averageGrade: 85,
     completedAssignments: 12,
     upcomingExams: 2
@@ -33,6 +63,17 @@ export function StudentDashboard() {
   ]
 
   const quickActions = [
+    {
+      title: 'Scan QR for Attendance',
+      description: 'Mark your attendance by scanning QR code',
+      icon: (
+        <svg className="w-full h-full" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z" />
+        </svg>
+      ),
+      onClick: () => router.push('/attendance/scan'),
+      color: 'blue' as const
+    },
     {
       title: 'Submit Assignment',
       description: 'Upload your completed assignments',
@@ -242,6 +283,48 @@ export function StudentDashboard() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Quick Actions */}
         <QuickActions title="Quick Actions" actions={quickActions} />
+
+        {/* Attendance Overview */}
+        {attendanceStats && (
+          <div className="bg-white rounded-lg shadow p-6">
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">Attendance Overview</h3>
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-gray-600">Overall Attendance Rate</span>
+                <span className="text-lg font-semibold text-blue-600">{attendanceStats.attendanceRate}%</span>
+              </div>
+
+              <div className="w-full bg-gray-200 rounded-full h-3">
+                <div
+                  className="bg-green-500 h-3 rounded-full"
+                  style={{ width: `${attendanceStats.attendanceRate}%` }}
+                />
+              </div>
+
+              <div className="grid grid-cols-3 gap-4 text-center">
+                <div className="p-3 bg-green-50 rounded-lg">
+                  <div className="text-lg font-semibold text-green-600">{attendanceStats.present}</div>
+                  <div className="text-xs text-green-700">Present</div>
+                </div>
+                <div className="p-3 bg-yellow-50 rounded-lg">
+                  <div className="text-lg font-semibold text-yellow-600">{attendanceStats.late}</div>
+                  <div className="text-xs text-yellow-700">Late</div>
+                </div>
+                <div className="p-3 bg-red-50 rounded-lg">
+                  <div className="text-lg font-semibold text-red-600">{attendanceStats.absent}</div>
+                  <div className="text-xs text-red-700">Absent</div>
+                </div>
+              </div>
+
+              <button
+                onClick={() => router.push('/attendance/scan')}
+                className="w-full py-2 px-4 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium"
+              >
+                Mark Today's Attendance
+              </button>
+            </div>
+          </div>
+        )}
 
         {/* Recent Activity */}
         <RecentActivity title="Recent Activity" activities={recentActivities} />

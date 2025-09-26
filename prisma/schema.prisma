@@ -62,6 +62,7 @@ model Class {
   students    Student[]
   attendance  Attendance[]
   materials   Material[]
+  qrSessions  QRSession[]
 
   @@map("classes")
 }
@@ -76,14 +77,33 @@ model Student {
 }
 
 model Attendance {
-  id        String   @id @default(cuid())
-  date      DateTime
-  status    String   // PRESENT, ABSENT, LATE
-  studentId String
-  classId   String
-  class     Class    @relation(fields: [classId], references: [id])
+  id          String    @id @default(cuid())
+  date        DateTime
+  status      String    // PRESENT, ABSENT, LATE
+  studentId   String
+  classId     String
+  class       Class     @relation(fields: [classId], references: [id])
+  markedAt    DateTime  @default(now())
+  markedBy    String?   // ID of user who marked (teacher/admin)
+  qrSessionId String?   // Optional: if marked via QR code
+  qrSession   QRSession? @relation(fields: [qrSessionId], references: [id])
 
+  @@unique([studentId, classId, date])
   @@map("attendance")
+}
+
+model QRSession {
+  id          String      @id @default(cuid())
+  classId     String
+  class       Class       @relation(fields: [classId], references: [id])
+  sessionCode String      @unique
+  expiresAt   DateTime
+  createdBy   String      // Teacher/Admin who created
+  isActive    Boolean     @default(true)
+  createdAt   DateTime    @default(now())
+  attendance  Attendance[]
+
+  @@map("qr_sessions")
 }
 
 model Material {
