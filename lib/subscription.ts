@@ -45,6 +45,7 @@ export const SUBSCRIPTION_PLANS: Record<SubscriptionTier, SubscriptionPlan> = {
       'Up to 500 students',
       'All Basic features',
       'Advanced analytics & insights',
+      'AI-powered homework generation',
       'AI-powered grade predictions',
       'Automated report generation',
       'Parent-teacher messaging',
@@ -69,6 +70,7 @@ export const SUBSCRIPTION_PLANS: Record<SubscriptionTier, SubscriptionPlan> = {
       'All Pro features',
       'Multi-campus management',
       'Advanced AI features',
+      'AI homework templates & variations',
       'Custom integrations',
       'White-label solution',
       'Dedicated account manager',
@@ -142,4 +144,23 @@ export const formatPrice = (price: number): string => {
 export const calculateSavings = (monthlyPrice: number, yearlyPrice: number): number => {
   const monthlyTotal = monthlyPrice * 12
   return ((monthlyTotal - yearlyPrice) / monthlyTotal) * 100
+}
+
+// Mock function to check user subscription tier - replace with actual database query
+export async function checkSubscriptionTier(userEmail: string): Promise<SubscriptionStatus | null> {
+  // This is a mock implementation - replace with actual database query
+  // For demo purposes, return PRO tier for all users
+  return {
+    tier: 'PRO',
+    status: 'active',
+    currentPeriodStart: new Date().toISOString(),
+    currentPeriodEnd: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+    usage: {
+      studentsUsed: 50,
+      classesCreated: 10,
+      reportsGenerated: 25,
+      storageUsed: 500
+    },
+    billingCycle: 'monthly'
+  }
 }
