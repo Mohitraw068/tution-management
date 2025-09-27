@@ -31,22 +31,22 @@ export function DifficultySelector({ value, onChange }: DifficultySelectorProps)
   ] as const;
 
   return (
-    <div className="grid grid-cols-3 gap-3">
+    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
       {difficulties.map((difficulty) => (
         <button
           key={difficulty.value}
           type="button"
           onClick={() => onChange(difficulty.value)}
           className={`
-            p-3 border-2 rounded-lg text-center transition-all duration-200
+            p-4 border-2 rounded-lg text-center transition-all duration-200 min-h-[60px] touch-manipulation
             ${value === difficulty.value
               ? difficulty.selectedColor
-              : difficulty.color + ' hover:bg-opacity-80'
+              : difficulty.color + ' hover:bg-opacity-80 active:bg-opacity-90'
             }
           `}
         >
-          <div className="font-medium text-sm">{difficulty.label}</div>
-          <div className="text-xs mt-1 opacity-75">
+          <div className="font-medium text-base">{difficulty.label}</div>
+          <div className="text-sm mt-1 opacity-75">
             {difficulty.description}
           </div>
         </button>

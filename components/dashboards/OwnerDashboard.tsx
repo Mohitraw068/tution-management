@@ -104,15 +104,15 @@ export function OwnerDashboard() {
   return (
     <div className="space-y-6">
       {/* Institute Overview */}
-      <div className="bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg p-6 text-white">
-        <h2 className="text-2xl font-bold mb-2">Welcome back, Owner!</h2>
-        <p className="text-blue-100">
+      <div className="bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg p-4 lg:p-6 text-white">
+        <h2 className="text-xl lg:text-2xl font-bold mb-2">Welcome back, Owner!</h2>
+        <p className="text-blue-100 text-sm lg:text-base">
           {institute?.name} • {institute?.subscription} Plan • {stats.totalStudents}/{institute?.studentLimit} Students
         </p>
       </div>
 
       {/* Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 lg:gap-6">
         <StatsCard
           title="Total Students"
           value={stats.totalStudents}
@@ -187,7 +187,7 @@ export function OwnerDashboard() {
       </div>
 
       {/* Quick Actions and Recent Activity */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6">
         <QuickActions title="Quick Actions" actions={quickActions} />
         <RecentActivity title="Recent Activity" activities={recentActivities} />
       </div>

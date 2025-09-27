@@ -59,18 +59,18 @@ export function AIHomeworkForm({ onGenerate, isGenerating }: AIHomeworkFormProps
   };
 
   return (
-    <form onSubmit={handleSubmit} className="bg-white rounded-lg shadow-md p-6">
+    <form onSubmit={handleSubmit} className="bg-white rounded-lg shadow-md p-4 sm:p-6">
       <h2 className="text-xl font-semibold mb-4">Generate AI Homework</h2>
 
-      <div className="space-y-4">
+      <div className="space-y-6">
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label className="block text-sm font-medium text-gray-700 mb-2">
             Subject *
           </label>
           <select
             value={formData.subject}
             onChange={(e) => setFormData(prev => ({ ...prev, subject: e.target.value }))}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full px-4 py-3 text-base border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent min-h-[44px] appearance-none bg-white"
             required
           >
             <option value="">Select a subject</option>
@@ -81,7 +81,7 @@ export function AIHomeworkForm({ onGenerate, isGenerating }: AIHomeworkFormProps
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label className="block text-sm font-medium text-gray-700 mb-2">
             Topic *
           </label>
           <input
@@ -89,7 +89,9 @@ export function AIHomeworkForm({ onGenerate, isGenerating }: AIHomeworkFormProps
             value={formData.topic}
             onChange={(e) => setFormData(prev => ({ ...prev, topic: e.target.value }))}
             placeholder="e.g., Quadratic Equations, Photosynthesis, World War II"
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full px-4 py-3 text-base border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent min-h-[44px]"
+            autoComplete="off"
+            autoCapitalize="words"
             required
           />
         </div>
@@ -105,7 +107,7 @@ export function AIHomeworkForm({ onGenerate, isGenerating }: AIHomeworkFormProps
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label className="block text-sm font-medium text-gray-700 mb-2">
             Number of Questions
           </label>
           <input
@@ -114,41 +116,42 @@ export function AIHomeworkForm({ onGenerate, isGenerating }: AIHomeworkFormProps
             max="20"
             value={formData.numQuestions}
             onChange={(e) => setFormData(prev => ({ ...prev, numQuestions: parseInt(e.target.value) }))}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full px-4 py-3 text-base border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent min-h-[44px]"
+            inputMode="numeric"
           />
           <p className="text-xs text-gray-500 mt-1">Maximum 20 questions</p>
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
+          <label className="block text-sm font-medium text-gray-700 mb-3">
             Question Types *
           </label>
-          <div className="space-y-2">
+          <div className="space-y-3">
             {questionTypeOptions.map(option => (
-              <label key={option.value} className="flex items-center">
+              <label key={option.value} className="flex items-center min-h-[44px] p-2 rounded-lg hover:bg-gray-50 active:bg-gray-100 cursor-pointer">
                 <input
                   type="checkbox"
                   checked={formData.questionTypes.includes(option.value)}
                   onChange={() => toggleQuestionType(option.value)}
-                  className="mr-2 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                  className="mr-3 h-5 w-5 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
                 />
-                <span className="text-sm text-gray-700">{option.label}</span>
+                <span className="text-base text-gray-700">{option.label}</span>
               </label>
             ))}
           </div>
           {formData.questionTypes.length === 0 && (
-            <p className="text-xs text-red-500 mt-1">Select at least one question type</p>
+            <p className="text-xs text-red-500 mt-2">Select at least one question type</p>
           )}
         </div>
 
         <button
           type="submit"
           disabled={isGenerating || !formData.subject || !formData.topic || formData.questionTypes.length === 0}
-          className="w-full py-2 px-4 bg-gradient-to-r from-purple-500 to-pink-500 text-white font-medium rounded-md hover:from-purple-600 hover:to-pink-600 focus:outline-none focus:ring-2 focus:ring-purple-500 disabled:opacity-50 disabled:cursor-not-allowed"
+          className="w-full py-4 px-6 bg-gradient-to-r from-purple-500 to-pink-500 text-white font-medium text-base rounded-lg hover:from-purple-600 hover:to-pink-600 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 min-h-[48px] touch-manipulation"
         >
           {isGenerating ? (
             <div className="flex items-center justify-center">
-              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+              <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
               Generating...
             </div>
           ) : (

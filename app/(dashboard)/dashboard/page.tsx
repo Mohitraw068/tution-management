@@ -4,7 +4,7 @@ import { useSession } from 'next-auth/react'
 import { useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { useInstitute, useInstituteBranding } from '@/components/providers/InstituteProvider'
-import { Sidebar } from '@/components/layout/Sidebar'
+import { MobileHeader } from '@/components/mobile/MobileHeader'
 import { NotificationBell } from '@/components/notifications/NotificationBell'
 import { OwnerDashboard } from '@/components/dashboards/OwnerDashboard'
 import { TeacherDashboard } from '@/components/dashboards/TeacherDashboard'
@@ -63,32 +63,32 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 flex" style={cssVariables}>
-      {/* Sidebar */}
-      <div className="w-64 fixed inset-y-0 left-0 z-50">
-        <Sidebar />
-      </div>
+    <div className="min-h-screen bg-gray-50" style={cssVariables}>
+      {/* Mobile Header */}
+      <MobileHeader
+        title="Dashboard"
+        actions={
+          <NotificationBell />
+        }
+      />
 
-      {/* Main Content */}
-      <div className="flex-1 ml-64">
-        {/* Header */}
-        <header className="bg-white shadow-sm border-b border-gray-200">
-          <div className="flex justify-between items-center px-6 py-4">
-            <div>
-              <h1 className="text-2xl font-semibold text-gray-900">Dashboard</h1>
-              <p className="text-sm text-gray-600">Welcome back, {session.user.name}</p>
-            </div>
-            <div className="flex items-center space-x-4">
-              <NotificationBell />
-            </div>
+      {/* Desktop Header */}
+      <header className="hidden lg:block bg-white shadow-sm border-b border-gray-200">
+        <div className="flex justify-between items-center px-6 py-4">
+          <div>
+            <h1 className="text-2xl font-semibold text-gray-900">Dashboard</h1>
+            <p className="text-sm text-gray-600">Welcome back, {session.user.name}</p>
           </div>
-        </header>
+          <div className="flex items-center space-x-4">
+            <NotificationBell />
+          </div>
+        </div>
+      </header>
 
-        {/* Main Dashboard Content */}
-        <main className="p-6">
-          {renderDashboardContent()}
-        </main>
-      </div>
+      {/* Main Dashboard Content */}
+      <main className="p-4 lg:p-6">
+        {renderDashboardContent()}
+      </main>
     </div>
   )
 }
