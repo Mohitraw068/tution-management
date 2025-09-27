@@ -2,6 +2,7 @@
 
 import { useSession } from 'next-auth/react'
 import { useState, useEffect } from 'react'
+import { FeatureGate } from '@/components/subscription/FeatureGate'
 import {
   LineChart,
   Line,
@@ -568,71 +569,119 @@ export default function AnalyticsPage() {
   }
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">Analytics Dashboard</h1>
-          <p className="text-gray-600">Comprehensive performance and attendance analytics</p>
-        </div>
+    <FeatureGate
+      requiredTier="PRO"
+      feature="Advanced Analytics"
+      fallback={
+        <div className="space-y-6">
+          {/* Header */}
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+            <div>
+              <h1 className="text-2xl font-bold text-gray-900">Analytics Dashboard</h1>
+              <p className="text-gray-600">Comprehensive performance and attendance analytics</p>
+            </div>
+          </div>
 
-        <div className="flex items-center space-x-4">
-          {/* Time Range Selector */}
-          <select
-            value={timeRange}
-            onChange={(e) => setTimeRange(e.target.value)}
-            className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          {/* Basic Analytics for Basic Plan */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="bg-white rounded-lg shadow p-6">
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">Basic Stats</h3>
+              <p className="text-3xl font-bold text-blue-600">45</p>
+              <p className="text-gray-600">Total Students</p>
+            </div>
+            <div className="bg-white rounded-lg shadow p-6">
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">Classes</h3>
+              <p className="text-3xl font-bold text-green-600">8</p>
+              <p className="text-gray-600">Active Classes</p>
+            </div>
+            <div className="bg-white rounded-lg shadow p-6">
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">Attendance</h3>
+              <p className="text-3xl font-bold text-purple-600">92%</p>
+              <p className="text-gray-600">Average Rate</p>
+            </div>
+          </div>
+
+          <FeatureGate
+            requiredTier="PRO"
+            feature="Detailed Charts and Analytics"
+            showUpgrade={true}
           >
-            <option value="week">This Week</option>
-            <option value="month">This Month</option>
-            <option value="semester">This Semester</option>
-            <option value="year">This Year</option>
-          </select>
+            <div></div>
+          </FeatureGate>
+        </div>
+      }
+    >
+      <div className="space-y-6">
+        {/* Header */}
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900">Analytics Dashboard</h1>
+            <p className="text-gray-600">Comprehensive performance and attendance analytics</p>
+          </div>
 
-          {/* Tab Selector */}
-          <div className="flex rounded-lg border border-gray-300 overflow-hidden">
-            <button
-              onClick={() => setActiveTab('performance')}
-              className={`px-4 py-2 text-sm font-medium transition-colors ${
-                activeTab === 'performance'
-                  ? 'bg-blue-600 text-white'
-                  : 'bg-white text-gray-700 hover:bg-gray-50'
-              }`}
+          <div className="flex items-center space-x-4">
+            {/* Time Range Selector */}
+            <select
+              value={timeRange}
+              onChange={(e) => setTimeRange(e.target.value)}
+              className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             >
-              Performance
-            </button>
-            <button
-              onClick={() => setActiveTab('attendance')}
-              className={`px-4 py-2 text-sm font-medium transition-colors ${
-                activeTab === 'attendance'
-                  ? 'bg-blue-600 text-white'
-                  : 'bg-white text-gray-700 hover:bg-gray-50'
-              }`}
-            >
-              Attendance
-            </button>
+              <option value="week">This Week</option>
+              <option value="month">This Month</option>
+              <option value="semester">This Semester</option>
+              <option value="year">This Year</option>
+            </select>
+
+            {/* Tab Selector */}
+            <div className="flex rounded-lg border border-gray-300 overflow-hidden">
+              <button
+                onClick={() => setActiveTab('performance')}
+                className={`px-4 py-2 text-sm font-medium transition-colors ${
+                  activeTab === 'performance'
+                    ? 'bg-blue-600 text-white'
+                    : 'bg-white text-gray-700 hover:bg-gray-50'
+                }`}
+              >
+                Performance
+              </button>
+              <button
+                onClick={() => setActiveTab('attendance')}
+                className={`px-4 py-2 text-sm font-medium transition-colors ${
+                  activeTab === 'attendance'
+                    ? 'bg-blue-600 text-white'
+                    : 'bg-white text-gray-700 hover:bg-gray-50'
+                }`}
+              >
+                Attendance
+              </button>
+            </div>
           </div>
         </div>
+
+        {/* Dashboard Content */}
+        {activeTab === 'performance' && (
+          <>
+            {userRole === 'STUDENT' && renderStudentDashboard()}
+            {userRole === 'TEACHER' && renderTeacherDashboard()}
+            {(['OWNER', 'ADMIN'].includes(userRole || '')) && renderOwnerDashboard()}
+          </>
+        )}
+
+        {activeTab === 'attendance' && (
+          <FeatureGate
+            requiredTier="PRO"
+            feature="Advanced Attendance Analytics"
+          >
+            <div className="bg-white rounded-lg shadow p-6">
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">Attendance Analytics</h3>
+              <p className="text-gray-600">
+                Detailed attendance analytics view would be rendered here based on user role.
+              </p>
+              {/* Additional attendance-specific charts would go here */}
+            </div>
+          </FeatureGate>
+        )}
       </div>
-
-      {/* Dashboard Content */}
-      {activeTab === 'performance' && (
-        <>
-          {userRole === 'STUDENT' && renderStudentDashboard()}
-          {userRole === 'TEACHER' && renderTeacherDashboard()}
-          {(['OWNER', 'ADMIN'].includes(userRole || '')) && renderOwnerDashboard()}
-        </>
-      )}
-
-      {activeTab === 'attendance' && (
-        <div className="bg-white rounded-lg shadow p-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Attendance Analytics</h3>
-          <p className="text-gray-600">
-            Detailed attendance analytics view would be rendered here based on user role.
-          </p>
-          {/* Additional attendance-specific charts would go here */}
-        </div>
-      )}
-    </div>
+    </FeatureGate>
   )
 }
