@@ -15,28 +15,84 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "ETution - Educational Management Platform",
-  description: "Multi-tenant educational management platform for institutes",
+  title: {
+    default: "ETution - Educational Management Platform",
+    template: "%s | ETution"
+  },
+  description: "Complete educational management platform for institutes, teachers, and students. Manage classes, track attendance, create assignments, and monitor progress all in one place.",
+  keywords: [
+    "educational platform",
+    "school management",
+    "student management",
+    "teacher portal",
+    "attendance tracking",
+    "homework management",
+    "class management",
+    "educational technology",
+    "learning management system",
+    "institute management"
+  ],
+  authors: [{ name: "ETution Team" }],
+  creator: "ETution",
+  publisher: "ETution",
+  category: "Education",
   manifest: "/manifest.json",
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
-    title: "Educational Platform",
+    title: "ETution",
+    startupImage: "/icons/icon-512x512.png"
   },
   formatDetection: {
     telephone: false,
   },
   openGraph: {
     type: "website",
-    siteName: "Educational Platform",
+    locale: "en_US",
+    url: process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000",
+    siteName: "ETution",
     title: "ETution - Educational Management Platform",
-    description: "Multi-tenant educational management platform for institutes",
+    description: "Complete educational management platform for institutes, teachers, and students. Manage classes, track attendance, create assignments, and monitor progress all in one place.",
+    images: [
+      {
+        url: "/icons/icon-512x512.png",
+        width: 512,
+        height: 512,
+        alt: "ETution Logo",
+      }
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    site: "@etution",
+    creator: "@etution",
+    title: "ETution - Educational Management Platform",
+    description: "Complete educational management platform for institutes, teachers, and students.",
+    images: ["/icons/icon-512x512.png"],
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-video-preview": -1,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+    },
+  },
+  verification: {
+    google: process.env.GOOGLE_SITE_VERIFICATION,
   },
   icons: {
     shortcut: "/icons/icon-192x192.png",
     apple: [
       { url: "/icons/icon-152x152.png", sizes: "152x152", type: "image/png" },
       { url: "/icons/icon-192x192.png", sizes: "192x192", type: "image/png" },
+    ],
+    icon: [
+      { url: "/icons/icon-192x192.png", sizes: "192x192", type: "image/png" },
+      { url: "/icons/icon-512x512.png", sizes: "512x512", type: "image/png" },
     ],
   },
 };

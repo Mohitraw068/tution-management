@@ -1,16 +1,13 @@
 'use client';
 
 import { useState } from 'react';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
 import { DifficultySelector } from './DifficultySelector';
+import { aiHomeworkSchema, type AiHomeworkInput } from '@/lib/validations';
 
 interface AIHomeworkFormProps {
-  onGenerate: (formData: {
-    subject: string;
-    topic: string;
-    difficulty: 'easy' | 'medium' | 'hard';
-    numQuestions: number;
-    questionTypes: string[];
-  }) => void;
+  onGenerate: (formData: AiHomeworkInput) => void;
   isGenerating: boolean;
 }
 

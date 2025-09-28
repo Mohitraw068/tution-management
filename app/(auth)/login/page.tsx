@@ -1,35 +1,42 @@
 'use client'
 
-import { useState } from 'react'
+import { useForm } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
 import { signIn, getSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
+import { loginSchema, type LoginInput } from '@/lib/validations'
 
 export default function LoginPage() {
-  const [formData, setFormData] = useState({
-    instituteCode: '',
-    email: '',
-    password: ''
-  })
-  const [error, setError] = useState('')
-  const [loading, setLoading] = useState(false)
   const router = useRouter()
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setLoading(true)
-    setError('')
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+    setError: setFormError,
+    clearErrors
+  } = useForm<LoginInput>({
+    resolver: zodResolver(loginSchema),
+    mode: 'onBlur'
+  })
+
+  const onSubmit = async (data: LoginInput) => {
+    clearErrors()
 
     try {
       const result = await signIn('credentials', {
-        instituteCode: formData.instituteCode,
-        email: formData.email,
-        password: formData.password,
+        instituteCode: data.instituteCode,
+        email: data.email,
+        password: data.password,
         redirect: false
       })
 
       if (result?.error) {
-        setError('Invalid credentials. Please check your institute code, email, and password.')
+        setFormError('root', {
+          type: 'manual',
+          message: 'Invalid credentials. Please check your institute code, email, and password.'
+        })
       } else {
         // Get updated session and redirect
         const session = await getSession()
@@ -38,17 +45,11 @@ export default function LoginPage() {
         }
       }
     } catch (err) {
-      setError('An error occurred. Please try again.')
-    } finally {
-      setLoading(false)
+      setFormError('root', {
+        type: 'manual',
+        message: 'An error occurred. Please try again.'
+      })
     }
-  }
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData(prev => ({
-      ...prev,
-      [e.target.name]: e.target.value
-    }))
   }
 
   return (
@@ -63,10 +64,10 @@ export default function LoginPage() {
           </p>
         </div>
 
-        <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
-          {error && (
+        <form className="mt-8 space-y-6" onSubmit={handleSubmit(onSubmit)}>
+          {errors.root && (
             <div className="rounded-md bg-red-50 p-4">
-              <div className="text-sm text-red-700">{error}</div>
+              <div className="text-sm text-red-700">{errors.root.message}</div>
             </div>
           )}
 
@@ -77,18 +78,22 @@ export default function LoginPage() {
               </label>
               <input
                 id="instituteCode"
-                name="instituteCode"
                 type="text"
-                required
-                className="appearance-none relative block w-full px-4 py-3 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-base min-h-[48px]"
+                {...register('instituteCode')}
+                className={`appearance-none relative block w-full px-4 py-3 border placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none focus:ring-2 focus:border-transparent text-base min-h-[48px] ${
+                  errors.instituteCode
+                    ? 'border-red-300 focus:ring-red-500'
+                    : 'border-gray-300 focus:ring-blue-500'
+                }`}
                 placeholder="Enter your institute code"
-                value={formData.instituteCode}
-                onChange={handleChange}
                 autoComplete="organization"
                 autoCapitalize="none"
                 autoCorrect="off"
                 spellCheck={false}
               />
+              {errors.instituteCode && (
+                <p className="mt-1 text-sm text-red-600">{errors.instituteCode.message}</p>
+              )}
             </div>
 
             <div>
@@ -97,19 +102,23 @@ export default function LoginPage() {
               </label>
               <input
                 id="email"
-                name="email"
                 type="email"
-                required
-                className="appearance-none relative block w-full px-4 py-3 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-base min-h-[48px]"
+                {...register('email')}
+                className={`appearance-none relative block w-full px-4 py-3 border placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none focus:ring-2 focus:border-transparent text-base min-h-[48px] ${
+                  errors.email
+                    ? 'border-red-300 focus:ring-red-500'
+                    : 'border-gray-300 focus:ring-blue-500'
+                }`}
                 placeholder="Enter your email"
-                value={formData.email}
-                onChange={handleChange}
                 autoComplete="email"
                 autoCapitalize="none"
                 autoCorrect="off"
                 spellCheck={false}
                 inputMode="email"
               />
+              {errors.email && (
+                <p className="mt-1 text-sm text-red-600">{errors.email.message}</p>
+              )}
             </div>
 
             <div>
@@ -118,25 +127,29 @@ export default function LoginPage() {
               </label>
               <input
                 id="password"
-                name="password"
                 type="password"
-                required
-                className="appearance-none relative block w-full px-4 py-3 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-base min-h-[48px]"
+                {...register('password')}
+                className={`appearance-none relative block w-full px-4 py-3 border placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none focus:ring-2 focus:border-transparent text-base min-h-[48px] ${
+                  errors.password
+                    ? 'border-red-300 focus:ring-red-500'
+                    : 'border-gray-300 focus:ring-blue-500'
+                }`}
                 placeholder="Enter your password"
-                value={formData.password}
-                onChange={handleChange}
                 autoComplete="current-password"
               />
+              {errors.password && (
+                <p className="mt-1 text-sm text-red-600">{errors.password.message}</p>
+              )}
             </div>
           </div>
 
           <div>
             <button
               type="submit"
-              disabled={loading}
+              disabled={isSubmitting}
               className="group relative w-full flex justify-center py-4 px-6 border border-transparent text-base font-medium rounded-lg text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed min-h-[48px] touch-manipulation transition-all duration-200"
             >
-              {loading ? (
+              {isSubmitting ? (
                 <div className="flex items-center">
                   <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
                   Signing in...

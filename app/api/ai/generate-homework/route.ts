@@ -2,6 +2,9 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 import { checkSubscriptionTier } from '@/lib/subscription';
+import { handleApiError, validateRequest, createSuccessResponse, AppError } from '@/lib/api-error-handler';
+import { checkRateLimit } from '@/lib/rate-limiter';
+import { aiHomeworkSchema } from '@/lib/validations';
 
 interface AIQuestion {
   id: string;
@@ -14,142 +17,64 @@ interface AIQuestion {
 }
 
 export async function POST(request: NextRequest) {
-  // Always set JSON headers
-  const headers = {
-    'Content-Type': 'application/json',
-  };
-
   try {
+    // Rate limiting
+    const rateLimitResult = await checkRateLimit(request, 'aiGeneration');
+    if (!rateLimitResult.success) {
+      return rateLimitResult.response;
+    }
+
     // Check authentication
     const session = await getServerSession(authOptions);
-
     if (!session?.user?.email) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: 'Unauthorized - Please log in to access this feature'
-        },
-        { status: 401, headers }
-      );
+      throw new AppError('Unauthorized - Please log in to access this feature', 401, 'UNAUTHORIZED');
     }
 
-    // Parse request body with error handling
-    let requestData;
-    try {
-      requestData = await request.json();
-    } catch (parseError) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: 'Invalid request format - Please provide valid JSON'
-        },
-        { status: 400, headers }
-      );
-    }
-
-    const { subject, topic, difficulty, numQuestions, questionTypes } = requestData;
-
-    // Validate required fields
-    if (!subject || !topic || !difficulty || !numQuestions || !questionTypes) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: 'Missing required fields: subject, topic, difficulty, numQuestions, and questionTypes are required'
-        },
-        { status: 400, headers }
-      );
-    }
-
-    // Validate question types array
-    if (!Array.isArray(questionTypes) || questionTypes.length === 0) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: 'questionTypes must be a non-empty array'
-        },
-        { status: 400, headers }
-      );
-    }
-
-    // Validate number of questions
-    if (typeof numQuestions !== 'number' || numQuestions < 1 || numQuestions > 20) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: 'numQuestions must be a number between 1 and 20'
-        },
-        { status: 400, headers }
-      );
-    }
+    // Parse and validate request body
+    const body = await request.json();
+    const validatedData = validateRequest(aiHomeworkSchema, body);
 
     // Check subscription tier
-    try {
-      const subscription = await checkSubscriptionTier(session.user.email);
-      if (!subscription || !['PRO', 'ENTERPRISE'].includes(subscription.tier)) {
-        return NextResponse.json(
-          {
-            success: false,
-            error: 'This feature requires a PRO or ENTERPRISE subscription',
-            upgradeRequired: true,
-            currentTier: subscription?.tier || 'BASIC'
-          },
-          { status: 403, headers }
-        );
+    const subscription = await checkSubscriptionTier(session.user.email);
+    if (!subscription || !['PRO', 'ENTERPRISE'].includes(subscription.tier)) {
+      throw new AppError(
+        'This feature requires a PRO or ENTERPRISE subscription',
+        403,
+        'SUBSCRIPTION_REQUIRED',
+        {
+          upgradeRequired: true,
+          currentTier: subscription?.tier || 'BASIC'
+        }
+      );
+    }
+
+    // Generate mock questions
+    const mockQuestions = generateMockQuestions(
+      validatedData.subject,
+      validatedData.topic,
+      validatedData.difficulty,
+      validatedData.numQuestions,
+      validatedData.questionTypes
+    );
+
+    const answerKey = generateAnswerKey(mockQuestions);
+
+    return createSuccessResponse({
+      questions: mockQuestions,
+      answerKey: answerKey,
+      metadata: {
+        subject: validatedData.subject,
+        topic: validatedData.topic,
+        difficulty: validatedData.difficulty,
+        totalQuestions: mockQuestions.length,
+        totalPoints: mockQuestions.reduce((sum, q) => sum + q.points, 0),
+        generatedAt: new Date().toISOString(),
+        mockData: true
       }
-    } catch (subscriptionError) {
-      console.error('Error checking subscription:', subscriptionError);
-      return NextResponse.json(
-        {
-          success: false,
-          error: 'Unable to verify subscription status'
-        },
-        { status: 500, headers }
-      );
-    }
-
-    // Generate mock questions (always use mock data for now)
-    try {
-      const mockQuestions = generateMockQuestions(subject, topic, difficulty, numQuestions, questionTypes);
-      const answerKey = generateAnswerKey(mockQuestions);
-
-      return NextResponse.json(
-        {
-          success: true,
-          questions: mockQuestions,
-          answerKey: answerKey,
-          metadata: {
-            subject,
-            topic,
-            difficulty,
-            totalQuestions: mockQuestions.length,
-            totalPoints: mockQuestions.reduce((sum, q) => sum + q.points, 0),
-            generatedAt: new Date().toISOString(),
-            mockData: true
-          }
-        },
-        { status: 200, headers }
-      );
-
-    } catch (generationError) {
-      console.error('Error generating mock questions:', generationError);
-      return NextResponse.json(
-        {
-          success: false,
-          error: 'Failed to generate homework questions'
-        },
-        { status: 500, headers }
-      );
-    }
+    }, 'Homework questions generated successfully');
 
   } catch (error) {
-    console.error('Unexpected error in AI homework generation:', error);
-    return NextResponse.json(
-      {
-        success: false,
-        error: 'An unexpected error occurred while generating homework'
-      },
-      { status: 500, headers }
-    );
+    return handleApiError(error);
   }
 }
 
