@@ -1,39 +1,48 @@
-# ETution - Educational Management Platform
+# 🎓 ETution Platform
 
-A comprehensive, multi-tenant educational management platform built with Next.js 15, TypeScript, and Prisma. Designed for institutes, teachers, students, and parents to manage educational activities efficiently.
+A comprehensive, modern education management system built with Next.js 15, designed for tutoring institutes, coaching centers, and educational organizations.
 
-## 🚀 Features
+## ✨ Features
 
-### Core Features
-- **Multi-tenant Architecture**: Separate institutes with custom branding
-- **Role-based Access Control**: Owner, Admin, Teacher, Student, Parent roles
-- **Class Management**: Create and manage classes with enrollment
-- **Attendance Tracking**: QR code scanning, manual marking, real-time updates
-- **Homework Management**: AI-powered homework generation, assignment tracking
-- **Dashboard Analytics**: Comprehensive insights and reporting
-- **Mobile Responsive**: Optimized for all devices with PWA support
+### 🏛️ Multi-Institute Support
+- Subdomain-based multi-tenancy
+- Institute-specific branding and customization
+- Flexible subscription models (Basic, Pro, Enterprise)
 
-### Technical Features
-- **Modern Stack**: Next.js 15 with Turbopack, TypeScript, Tailwind CSS
-- **Database**: PostgreSQL/SQLite with Prisma ORM
-- **Authentication**: NextAuth.js with secure session management
-- **Form Validation**: React Hook Form with Zod schemas
-- **Error Handling**: Comprehensive error boundaries and API error handling
-- **Rate Limiting**: Built-in protection against abuse
-- **SEO Optimized**: Meta tags, Open Graph, sitemap generation
-- **Performance**: Image optimization, lazy loading, Suspense boundaries
+### 👥 Role-Based Access Control
+- **Owner/Admin**: Full institute management
+- **Teachers**: Class management, homework assignment, attendance tracking
+- **Students**: View assignments, submit homework, track progress
+- **Parents**: Monitor child's progress and attendance
+
+### 📚 Academic Management
+- Class creation and student enrollment
+- Interactive homework assignment system
+- AI-powered homework generation using OpenAI
+- Real-time attendance tracking with QR codes
+- Comprehensive reporting and analytics
+
+### 💳 Payment Integration
+- Stripe payment processing
+- Subscription management
+- Fee collection and invoicing
+
+### 📱 Mobile-Responsive Design
+- Optimized for all devices
+- Progressive Web App (PWA) capabilities
+- Touch-friendly interface
 
 ## 🛠️ Tech Stack
 
 - **Framework**: Next.js 15 with Turbopack
 - **Language**: TypeScript
-- **Styling**: Tailwind CSS
-- **Database**: Prisma with PostgreSQL/SQLite
-- **Authentication**: NextAuth.js
-- **Forms**: React Hook Form + Zod
-- **UI Components**: Custom responsive components
-- **State Management**: React Context + local state
-- **Deployment**: Vercel-ready
+- **Styling**: Tailwind CSS 4
+- **Database**: PostgreSQL with Prisma ORM
+- **Authentication**: NextAuth.js with JWT
+- **Payments**: Stripe integration
+- **AI**: OpenAI API for homework generation
+- **Forms**: React Hook Form + Zod validation
+- **Deployment**: Vercel + Docker support
 
 ## 📦 Installation
 
@@ -89,25 +98,20 @@ A comprehensive, multi-tenant educational management platform built with Next.js
 6. **Open your browser**
    Navigate to [http://localhost:3000](http://localhost:3000)
 
-## 🎯 Demo Accounts
+## 🔑 Demo Credentials
 
-After running the seed script, you can log in with these demo accounts:
+### Primary Demo Institute (Code: DEMO-2024)
+- **Owner**: owner@demo.com / password123
+- **Teacher**: teacher@demo.com / password123
+- **Student**: student@demo.com / password123
+- **Parent**: parent@demo.com / password123
 
-### Greenwood Academy (GWA)
-- **Admin**: `admin@greenwood.edu` / `password123`
-- **Teacher**: `sarah.johnson@greenwood.edu` / `password123`
-- **Student**: `alex.thompson@greenwood.edu` / `password123`
-- **Parent**: `robert.thompson@gmail.com` / `password123`
+### Additional Sample Institutes
+- **Tech Valley Institute (TVI-2024)**: admin@techvalley.edu / password123
+- **Sunrise Learning Center (SLC-2024)**: admin@sunrise.edu / password123
 
-### Tech Valley Institute (TVI)
-- **Admin**: `admin@techvalley.edu` / `password123`
-- **Teacher**: `sarah.johnson@techvalley.edu` / `password123`
-- **Student**: `alex.thompson@techvalley.edu` / `password123`
-
-### Sunrise Learning Center (SLC)
-- **Admin**: `admin@sunrise.edu` / `password123`
-- **Teacher**: `sarah.johnson@sunrise.edu` / `password123`
-- **Student**: `alex.thompson@sunrise.edu` / `password123`
+💡 All users have the same password: `password123`
+🌐 Use Institute Code "DEMO-2024" for primary demo credentials
 
 ## 📱 Mobile Features
 
@@ -156,5 +160,57 @@ The platform is fully optimized for mobile devices:
    ```bash
    npx vercel --prod
    ```
+
+### Docker Deployment
+
+1. **Build and run with Docker**
+   ```bash
+   docker build -t etution-platform .
+   docker run -p 3000:3000 etution-platform
+   ```
+
+2. **Use Docker Compose**
+   ```bash
+   cp .env.example .env.production
+   docker-compose --env-file .env.production up -d
+   ```
+
+## 📁 Project Structure
+
+```
+etution-platform/
+├── app/                    # Next.js App Router
+│   ├── api/               # API routes
+│   ├── (auth)/            # Authentication pages
+│   ├── (dashboard)/       # Protected dashboard pages
+│   └── layout.tsx         # Root layout
+├── components/            # Reusable UI components
+├── lib/                  # Utility functions
+├── prisma/               # Database schema and migrations
+├── public/               # Static assets
+└── styles/               # Global styles
+```
+
+## 🔧 Environment Configuration
+
+See `.env.example` for all available environment variables including:
+- Database configuration
+- Authentication secrets
+- Payment integration (Stripe)
+- AI services (OpenAI)
+- Email configuration
+- Analytics and monitoring
+
+## 🆘 Support
+
+- 📧 Email: support@etution.com
+- 💬 Community: [Discord Server](https://discord.gg/etution)
+- 🐛 Issues: [GitHub Issues](https://github.com/your-org/etution/issues)
+
+## 📄 License
+
+This project is licensed under the MIT License.
+
+---
 
 Built with ❤️ using [Next.js](https://nextjs.org/) and [TypeScript](https://www.typescriptlang.org/)

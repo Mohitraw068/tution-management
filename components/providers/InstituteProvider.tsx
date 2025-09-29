@@ -38,11 +38,14 @@ export function InstituteProvider({ children }: InstituteProviderProps) {
 
       if (!response.ok) {
         if (response.status === 404) {
-          setError('Institute not found')
+          // In development without subdomain, this is expected
+          console.log('No institute found (likely localhost without subdomain)')
+          setError(null)
+          setInstitute(null)
         } else {
           setError('Failed to fetch institute data')
+          setInstitute(null)
         }
-        setInstitute(null)
         return
       }
 

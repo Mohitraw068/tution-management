@@ -17,53 +17,48 @@ async function main() {
   // Create demo institutes
   console.log('🏛️ Creating demo institutes...');
 
-  const institutes = await Promise.all([
-    prisma.institute.create({
-      data: {
-        name: 'Greenwood Academy',
-        code: 'GWA',
-        domain: 'greenwood',
-        description: 'A premier educational institution focused on holistic development',
-        subscription: 'ENTERPRISE',
-        studentLimit: 500,
-        settings: {
-          primaryColor: '#059669',
-          secondaryColor: '#10B981',
-          logo: 'https://via.placeholder.com/150/059669/FFFFFF?text=GWA'
-        }
-      }
-    }),
-    prisma.institute.create({
+  // Create the main demo institute with requested credentials
+  const demoInstitute = await prisma.institute.create({
+    data: {
+      name: 'Demo Academy 2024',
+      subdomain: 'demo',
+      instituteCode: 'DEMO-2024',
+      description: 'Demo institute for testing and showcasing the ETution platform',
+      subscription: 'ENTERPRISE',
+      studentLimit: 500,
+      primaryColor: '#059669',
+      logo: 'https://via.placeholder.com/150/059669/FFFFFF?text=DEMO'
+    }
+  });
+
+  // Create additional sample institutes
+  const institutes = [
+    demoInstitute,
+    await prisma.institute.create({
       data: {
         name: 'Tech Valley Institute',
-        code: 'TVI',
-        domain: 'techvalley',
+        subdomain: 'techvalley',
+        instituteCode: 'TVI-2024',
         description: 'Innovation-driven education for the digital age',
         subscription: 'PRO',
         studentLimit: 300,
-        settings: {
-          primaryColor: '#3B82F6',
-          secondaryColor: '#60A5FA',
-          logo: 'https://via.placeholder.com/150/3B82F6/FFFFFF?text=TVI'
-        }
+        primaryColor: '#3B82F6',
+        logo: 'https://via.placeholder.com/150/3B82F6/FFFFFF?text=TVI'
       }
     }),
-    prisma.institute.create({
+    await prisma.institute.create({
       data: {
         name: 'Sunrise Learning Center',
-        code: 'SLC',
-        domain: 'sunrise',
+        subdomain: 'sunrise',
+        instituteCode: 'SLC-2024',
         description: 'Nurturing young minds with personalized learning',
         subscription: 'BASIC',
         studentLimit: 100,
-        settings: {
-          primaryColor: '#F59E0B',
-          secondaryColor: '#FBBF24',
-          logo: 'https://via.placeholder.com/150/F59E0B/FFFFFF?text=SLC'
-        }
+        primaryColor: '#F59E0B',
+        logo: 'https://via.placeholder.com/150/F59E0B/FFFFFF?text=SLC'
       }
     })
-  ]);
+  ];
 
   console.log(`✅ Created ${institutes.length} institutes`);
 
@@ -73,123 +68,201 @@ async function main() {
   const password = await bcrypt.hash('password123', 12);
   const users = [];
 
-  for (const institute of institutes) {
-    // Create Owner/Admin
-    const owner = await prisma.user.create({
-      data: {
-        name: `${institute.name} Admin`,
-        email: `admin@${institute.domain}.edu`,
-        password,
-        role: 'OWNER',
-        instituteId: institute.id
-      }
-    });
-    users.push(owner);
-
-    // Create Teachers
-    const teachers = await Promise.all([
-      prisma.user.create({
+  for (const [index, institute] of institutes.entries()) {
+    // Create specific demo users for the first institute (Demo Academy)
+    if (index === 0) {
+      // Create Owner with specific demo credentials
+      const owner = await prisma.user.create({
         data: {
-          name: 'Dr. Sarah Johnson',
-          email: `sarah.johnson@${institute.domain}.edu`,
+          name: 'Demo Owner',
+          email: 'owner@demo.com',
+          password,
+          role: 'OWNER',
+          instituteId: institute.id
+        }
+      });
+      users.push(owner);
+
+      // Create Teacher with specific demo credentials
+      const teacher = await prisma.user.create({
+        data: {
+          name: 'Demo Teacher',
+          email: 'teacher@demo.com',
           password,
           role: 'TEACHER',
           instituteId: institute.id
         }
-      }),
-      prisma.user.create({
-        data: {
-          name: 'Prof. Michael Chen',
-          email: `michael.chen@${institute.domain}.edu`,
-          password,
-          role: 'TEACHER',
-          instituteId: institute.id
-        }
-      }),
-      prisma.user.create({
-        data: {
-          name: 'Ms. Emily Rodriguez',
-          email: `emily.rodriguez@${institute.domain}.edu`,
-          password,
-          role: 'TEACHER',
-          instituteId: institute.id
-        }
-      })
-    ]);
-    users.push(...teachers);
+      });
 
-    // Create Students
-    const students = await Promise.all([
-      prisma.user.create({
-        data: {
-          name: 'Alex Thompson',
-          email: `alex.thompson@${institute.domain}.edu`,
-          password,
-          role: 'STUDENT',
-          instituteId: institute.id
-        }
-      }),
-      prisma.user.create({
-        data: {
-          name: 'Emma Wilson',
-          email: `emma.wilson@${institute.domain}.edu`,
-          password,
-          role: 'STUDENT',
-          instituteId: institute.id
-        }
-      }),
-      prisma.user.create({
-        data: {
-          name: 'Jordan Davis',
-          email: `jordan.davis@${institute.domain}.edu`,
-          password,
-          role: 'STUDENT',
-          instituteId: institute.id
-        }
-      }),
-      prisma.user.create({
-        data: {
-          name: 'Maya Patel',
-          email: `maya.patel@${institute.domain}.edu`,
-          password,
-          role: 'STUDENT',
-          instituteId: institute.id
-        }
-      }),
-      prisma.user.create({
-        data: {
-          name: 'Chris Martinez',
-          email: `chris.martinez@${institute.domain}.edu`,
-          password,
-          role: 'STUDENT',
-          instituteId: institute.id
-        }
-      })
-    ]);
-    users.push(...students);
+      // Create additional teachers
+      const teachers = [
+        teacher,
+        await prisma.user.create({
+          data: {
+            name: 'Dr. Sarah Johnson',
+            email: 'sarah.johnson@demo.com',
+            password,
+            role: 'TEACHER',
+            instituteId: institute.id
+          }
+        }),
+        await prisma.user.create({
+          data: {
+            name: 'Prof. Michael Chen',
+            email: 'michael.chen@demo.com',
+            password,
+            role: 'TEACHER',
+            instituteId: institute.id
+          }
+        })
+      ];
+      users.push(...teachers);
 
-    // Create Parents
-    const parents = await Promise.all([
-      prisma.user.create({
+      // Create Student with specific demo credentials
+      const student = await prisma.user.create({
         data: {
-          name: 'Robert Thompson',
-          email: `robert.thompson@gmail.com`,
+          name: 'Demo Student',
+          email: 'student@demo.com',
           password,
-          role: 'PARENT',
+          role: 'STUDENT',
           instituteId: institute.id
         }
-      }),
-      prisma.user.create({
+      });
+
+      // Create additional students
+      const students = [
+        student,
+        await prisma.user.create({
+          data: {
+            name: 'Alex Thompson',
+            email: 'alex.thompson@demo.com',
+            password,
+            role: 'STUDENT',
+            instituteId: institute.id
+          }
+        }),
+        await prisma.user.create({
+          data: {
+            name: 'Emma Wilson',
+            email: 'emma.wilson@demo.com',
+            password,
+            role: 'STUDENT',
+            instituteId: institute.id
+          }
+        }),
+        await prisma.user.create({
+          data: {
+            name: 'Jordan Davis',
+            email: 'jordan.davis@demo.com',
+            password,
+            role: 'STUDENT',
+            instituteId: institute.id
+          }
+        }),
+        await prisma.user.create({
+          data: {
+            name: 'Maya Patel',
+            email: 'maya.patel@demo.com',
+            password,
+            role: 'STUDENT',
+            instituteId: institute.id
+          }
+        })
+      ];
+      users.push(...students);
+
+      // Create Parents
+      const parents = await Promise.all([
+        prisma.user.create({
+          data: {
+            name: 'Robert Thompson',
+            email: 'parent@demo.com',
+            password,
+            role: 'PARENT',
+            instituteId: institute.id
+          }
+        }),
+        prisma.user.create({
+          data: {
+            name: 'Linda Wilson',
+            email: 'linda.wilson@demo.com',
+            password,
+            role: 'PARENT',
+            instituteId: institute.id
+          }
+        })
+      ]);
+      users.push(...parents);
+    } else {
+      // Create regular users for other institutes
+      const owner = await prisma.user.create({
         data: {
-          name: 'Linda Wilson',
-          email: `linda.wilson@gmail.com`,
+          name: `${institute.name} Admin`,
+          email: `admin@${institute.subdomain}.edu`,
           password,
-          role: 'PARENT',
+          role: 'OWNER',
           instituteId: institute.id
         }
-      })
-    ]);
-    users.push(...parents);
+      });
+      users.push(owner);
+
+      const teachers = await Promise.all([
+        prisma.user.create({
+          data: {
+            name: 'Dr. Sarah Johnson',
+            email: `sarah.johnson@${institute.subdomain}.edu`,
+            password,
+            role: 'TEACHER',
+            instituteId: institute.id
+          }
+        }),
+        prisma.user.create({
+          data: {
+            name: 'Prof. Michael Chen',
+            email: `michael.chen@${institute.subdomain}.edu`,
+            password,
+            role: 'TEACHER',
+            instituteId: institute.id
+          }
+        })
+      ]);
+      users.push(...teachers);
+
+      const students = await Promise.all([
+        prisma.user.create({
+          data: {
+            name: 'Alex Thompson',
+            email: `alex.thompson@${institute.subdomain}.edu`,
+            password,
+            role: 'STUDENT',
+            instituteId: institute.id
+          }
+        }),
+        prisma.user.create({
+          data: {
+            name: 'Emma Wilson',
+            email: `emma.wilson@${institute.subdomain}.edu`,
+            password,
+            role: 'STUDENT',
+            instituteId: institute.id
+          }
+        })
+      ]);
+      users.push(...students);
+
+      const parents = await Promise.all([
+        prisma.user.create({
+          data: {
+            name: 'Robert Thompson',
+            email: `robert.thompson@${institute.subdomain}.edu`,
+            password,
+            role: 'PARENT',
+            instituteId: institute.id
+          }
+        })
+      ]);
+      users.push(...parents);
+    }
 
     // Create Classes for this institute
     console.log(`📚 Creating classes for ${institute.name}...`);
@@ -302,16 +375,24 @@ async function main() {
   console.log('\n📋 Demo Login Credentials:');
   console.log('=========================');
 
-  for (const institute of institutes) {
-    console.log(`\n🏛️ ${institute.name} (${institute.code})`);
-    console.log(`   Admin: admin@${institute.domain}.edu / password123`);
-    console.log(`   Teacher: sarah.johnson@${institute.domain}.edu / password123`);
-    console.log(`   Student: alex.thompson@${institute.domain}.edu / password123`);
-    console.log(`   Parent: robert.thompson@gmail.com / password123`);
+  console.log('\n🎯 PRIMARY DEMO CREDENTIALS (Institute Code: DEMO-2024):');
+  console.log('   Owner:   owner@demo.com / password123');
+  console.log('   Teacher: teacher@demo.com / password123');
+  console.log('   Student: student@demo.com / password123');
+  console.log('   Parent:  parent@demo.com / password123');
+
+  console.log('\n🏛️ Additional Sample Institutes:');
+  for (const [index, institute] of institutes.entries()) {
+    if (index === 0) continue; // Skip demo institute (already shown above)
+    console.log(`\n   ${institute.name} (${institute.instituteCode})`);
+    console.log(`   Admin: admin@${institute.subdomain}.edu / password123`);
+    console.log(`   Teacher: sarah.johnson@${institute.subdomain}.edu / password123`);
+    console.log(`   Student: alex.thompson@${institute.subdomain}.edu / password123`);
   }
 
   console.log('\n💡 All users have the same password: password123');
   console.log('🔗 Access the app at: http://localhost:3000/login');
+  console.log('🌐 Use Institute Code "DEMO-2024" for demo credentials');
 }
 
 main()

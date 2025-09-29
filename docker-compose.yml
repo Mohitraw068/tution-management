@@ -1,0 +1,144 @@
+# ================================
+# ETution Platform - Docker Compose
+# For local development and testing
+# ================================
+
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: etution_db
+      POSTGRES_USER: etution_user
+      POSTGRES_PASSWORD: etution_password
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./scripts/init-db.sql:/docker-entrypoint-initdb.d/init-db.sql
+    ports:
+      - "5432:5432"
+    networks:
+      - etution-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U etution_user -d etution_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Redis (for session storage and caching)
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - etution-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ETution Application
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - DATABASE_URL=postgresql://etution_user:etution_password@postgres:5432/etution_db
+      - NEXTAUTH_SECRET=your-super-secret-nextauth-key-for-docker
+      - NEXTAUTH_URL=http://localhost:3000
+      - NEXT_PUBLIC_APP_URL=http://localhost:3000
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - etution-network
+    volumes:
+      - ./uploads:/app/uploads
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Nginx (reverse proxy and load balancer)
+  nginx:
+    image: nginx:alpine
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf
+      - ./nginx/ssl:/etc/nginx/ssl
+      - ./uploads:/usr/share/nginx/html/uploads
+    depends_on:
+      - app
+    networks:
+      - etution-network
+
+  # Prisma Studio (development only)
+  prisma-studio:
+    image: node:18-alpine
+    working_dir: /app
+    volumes:
+      - .:/app
+    command: npx prisma studio --port 5555 --hostname 0.0.0.0
+    ports:
+      - "5555:5555"
+    environment:
+      - DATABASE_URL=postgresql://etution_user:etution_password@postgres:5432/etution_db
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - etution-network
+    profiles:
+      - development
+
+volumes:
+  postgres_data:
+    driver: local
+  redis_data:
+    driver: local
+
+networks:
+  etution-network:
+    driver: bridge
+
+# ================================
+# Usage Instructions:
+# ================================
+#
+# Development with Docker:
+# 1. cp .env.example .env.local
+# 2. docker-compose up -d postgres redis
+# 3. npm run db:migrate
+# 4. npm run db:seed
+# 5. npm run dev
+#
+# Full Docker deployment:
+# 1. cp .env.example .env.production
+# 2. Update .env.production with production values
+# 3. docker-compose --env-file .env.production up -d
+#
+# Development with Prisma Studio:
+# docker-compose --profile development up -d
+#
+# View logs:
+# docker-compose logs -f app
+#
+# Reset database:
+# docker-compose down -v
+# docker-compose up -d
